@@ -38,10 +38,10 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const contacts = await Contact.find().sort({ createdAt: -1 });
-    res.status(200).json(contacts);
+    return res.status(200).json(contacts);
   } catch (error) {
     console.error("CONTACT GET ERROR:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to fetch contacts"
     });
@@ -54,13 +54,13 @@ router.get("/", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     await Contact.findByIdAndDelete(req.params.id);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Message deleted"
     });
   } catch (error) {
     console.error("CONTACT DELETE ERROR:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Delete failed"
     });
