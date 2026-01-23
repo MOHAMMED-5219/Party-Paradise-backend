@@ -1,68 +1,44 @@
 const express = require("express");
 const router = express.Router();
 const Contact = require("../models/Contact");
+const sendEmail = require("../utils/sendEmail");
 
-/* =========================
-   POST: Save contact message
-   ========================= */
+// ============================
+// POST: Save Contact + Auto Reply to Customer
+// ============================
 router.post("/", async (req, res) => {
   try {
-    const { name, email, phone, message } = req.body;
-
-    const contact = new Contact({
-      name,
-      email,
-      phone,
-      message
-    });
-
+    // 1. Save message in DB
+    const contact = new Contact(req.body);
     await contact.save();
 
-    return res.status(200).json({
+    // 2. Send THANK YOU email to CUSTOMER
+    await sendEmail(
+      req.body.email, // 👈 CUSTOMER EMAIL
+      "Thank you for contacting Party Paradise 🎉",
+      `Hi ${req.body.name},
+
+Thank you for contacting Party Paradise.
+
+We have received your message and our team will call you very soon.
+
+📞 Phone: ${req.body.phone}
+
+Regards,
+Party Paradise Team
+`
+    );
+
+    res.status(201).json({
       success: true,
-      message: "Message saved successfully"
+      message: "Message sent successfully",
     });
 
   } catch (error) {
-    console.error("CONTACT POST ERROR:", error);
-    return res.status(500).json({
+    console.error("Contact Error:", error);
+    res.status(500).json({
       success: false,
-      message: "Server error"
-    });
-  }
-});
-
-/* =========================
-   GET: All contact messages (Admin)
-   ========================= */
-router.get("/", async (req, res) => {
-  try {
-    const contacts = await Contact.find().sort({ createdAt: -1 });
-    return res.status(200).json(contacts);
-  } catch (error) {
-    console.error("CONTACT GET ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch contacts"
-    });
-  }
-});
-
-/* =========================
-   DELETE: Contact by ID (Admin)
-   ========================= */
-router.delete("/:id", async (req, res) => {
-  try {
-    await Contact.findByIdAndDelete(req.params.id);
-    return res.status(200).json({
-      success: true,
-      message: "Message deleted"
-    });
-  } catch (error) {
-    console.error("CONTACT DELETE ERROR:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Delete failed"
+      message: "Something went wrong",
     });
   }
 });
