@@ -8,31 +8,35 @@ const sendEmail = require("../utils/sendEmail");
 // ============================
 router.post("/", async (req, res) => {
   try {
+    const { name, email, phone, message } = req.body;
+
     // 1️⃣ Save to database
-    const contact = new Contact(req.body);
+    const contact = new Contact({ name, email, phone, message });
     await contact.save();
 
-    // 2️⃣ Send EMAIL TO CUSTOMER (NOT OWNER)
+    // 2️⃣ SEND EMAIL TO OWNER
     await sendEmail(
-      req.body.email,
-      "Thank you for contacting Party Paradise 🎉",
-      `Hi ${req.body.name},
+      "umarkpl4@gmail.com", // 👈 OWNER EMAIL (CHANGE THIS)
+      "📩 New Contact Enquiry - Party Paradise",
+      `
+You have received a new enquiry from your website.
 
-Thank you for contacting Party Paradise.
+👤 Name: ${name}
+📧 Email: ${email}
+📞 Phone: ${phone}
 
-We have received your message successfully.
-Our team will call you shortly to discuss your event.
+💬 Message:
+${message}
 
-📞 Phone: ${req.body.phone}
-
-Regards,
-Party Paradise Decoration Team`
+-------------------------
+Party Paradise Website
+      `
     );
 
-    // 3️⃣ Response
+    // 3️⃣ RESPONSE TO FRONTEND
     res.status(201).json({
       success: true,
-      message: "Message saved & email sent"
+      message: "Message sent successfully"
     });
 
   } catch (error) {
@@ -44,8 +48,9 @@ Party Paradise Decoration Team`
   }
 });
 
+
 // ============================
-// GET: Admin
+// GET: Admin Panel
 // ============================
 router.get("/", async (req, res) => {
   const contacts = await Contact.find().sort({ createdAt: -1 });
