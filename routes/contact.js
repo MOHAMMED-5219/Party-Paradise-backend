@@ -2,45 +2,32 @@ const express = require("express");
 const router = express.Router();
 const Contact = require("../models/Contact");
 
-// ============================
-// POST: Contact Form
-// ============================
+// ================= POST: SAVE CONTACT =================
 router.post("/", async (req, res) => {
   try {
-    const { name, email, phone, message } = req.body;
-
-    // 1️⃣ Save data in MongoDB
-    const contact = new Contact({
-      name,
-      email,
-      phone,
-      message
-    });
+    const contact = new Contact(req.body);
     await contact.save();
-
-    // ❌ EMAIL TEMPORARILY DISABLED (NO ERRORS NOW)
-
-    // 2️⃣ Response to frontend
-    res.status(201).json({
-      success: true,
-      message: "Message saved successfully"
-    });
-
-  } catch (error) {
-    console.error("❌ Contact error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
+    res.status(201).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
   }
 });
 
-// ============================
-// GET: Admin Panel
-// ============================
+// ================= GET: ALL CONTACTS =================
 router.get("/", async (req, res) => {
   const contacts = await Contact.find().sort({ createdAt: -1 });
   res.json(contacts);
+});
+
+// ================= DELETE: CONTACT =================
+router.delete("/:id", async (req, res) => {
+  try {
+    await Contact.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    res.status(500).json({ success: false });
+  }
 });
 
 module.exports = router;
