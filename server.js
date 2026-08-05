@@ -5,20 +5,51 @@ require("dotenv").config();
 
 const app = express();
 
-// middleware
+// =======================
+// Middleware
+// =======================
 app.use(cors());
 app.use(express.json());
 
-// routes
+// =======================
+// Routes
+// =======================
 app.use("/api/contact", require("./routes/contact"));
 app.use("/api/booking", require("./routes/booking"));
 
-// database connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected ✅"))
-  .catch(err => console.log("Mongo Error ❌", err));
+// =======================
+// Root Route
+// =======================
+app.get("/", (req, res) => {
+  res.send("🎉 Party Paradise Backend is Running Successfully!");
+});
 
-const PORT = process.env.PORT || 5001;
+// =======================
+// Health Check
+// =======================
+app.get("/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Backend is Healthy ✅"
+  });
+});
+
+// =======================
+// MongoDB Connection
+// =======================
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB Connected ✅");
+  })
+  .catch((err) => {
+    console.error("Mongo Error ❌", err);
+  });
+
+// =======================
+// Start Server
+// =======================
+const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} 🚀`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
